@@ -5,6 +5,8 @@
 // Implemented features:
 //  [X] Renderer: User texture binding. Use 'WGPUTextureView' as ImTextureID. Read the FAQ about ImTextureID!
 //  [X] Renderer: Large meshes support (64k+ vertices) with 16-bit indices.
+// Missing features:
+//  [ ] Renderer: Multi-viewport support (multiple windows). Not meaningful on the web.
 
 // You can use unmodified imgui_impl_* files in your project. See examples/ folder for examples of using this.
 // Prefer including the entire imgui/ repository into your project (either as a copy or as a submodule), and only build the backends you need.
@@ -16,6 +18,7 @@
 
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
+//  2024-01-17: Explicitly fill all of WGPUDepthStencilState since standard removed defaults.
 //  2023-07-13: Use WGPUShaderModuleWGSLDescriptor's code instead of source. use WGPUMipmapFilterMode_Linear instead of WGPUFilterMode_Linear. (#6602)
 //  2023-04-11: Align buffer sizes. Use WGSL shaders instead of precompiled SPIR-V.
 //  2023-04-11: Reorganized backend to pull data from a single structure to facilitate usage with multiple-contexts (all g_XXXX access changed to bd->XXXX).
@@ -654,7 +657,13 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
     depth_stencil_state.depthWriteEnabled = false;
     depth_stencil_state.depthCompare = WGPUCompareFunction_Always;
     depth_stencil_state.stencilFront.compare = WGPUCompareFunction_Always;
+    depth_stencil_state.stencilFront.failOp = WGPUStencilOperation_Keep;
+    depth_stencil_state.stencilFront.depthFailOp = WGPUStencilOperation_Keep;
+    depth_stencil_state.stencilFront.passOp = WGPUStencilOperation_Keep;
     depth_stencil_state.stencilBack.compare = WGPUCompareFunction_Always;
+    depth_stencil_state.stencilBack.failOp = WGPUStencilOperation_Keep;
+    depth_stencil_state.stencilBack.depthFailOp = WGPUStencilOperation_Keep;
+    depth_stencil_state.stencilBack.passOp = WGPUStencilOperation_Keep;
 
     // Configure disabled depth-stencil state
     graphics_pipeline_desc.depthStencil = (bd->depthStencilFormat == WGPUTextureFormat_Undefined) ? nullptr :  &depth_stencil_state;
